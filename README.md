@@ -43,6 +43,26 @@
 
     // URL to that post
     the_permalink();
+
+    // Time
+    the_time('m/d/y');  // 'F j, Y g:i a'
+
+    // The Author
+    the_author();   // Author name who posted it
+
+    // Url of Author posts
+    get_author_posts_url( get_the_author_meta('ID') );  // Get author ID: get_the_author_meta('ID');
+
+    // Categories
+    $categories = get_the_category();   // get all categories in which a post is belongs to
+    $separator = ', ';
+    $output = '';
+    if($categories){
+        foreach($categories as $category){
+            $output .= '<a href=" '. get_category_link($category->term_id) .' ">'. $category->cat_name . '</a>' . $separator;
+        }
+        echo $output;
+    }
 ```
 
 ## Wordpress navigation menu
@@ -104,5 +124,89 @@
 ## Wordpress Pages Customization
 - make a new page 'page.php' <!-- It'll define page template for page -->
 ```php
+    // To check for current page
+    if( is_page($page_id_here) );  // you can also pass 'slug_name' here
+    // To check page_id except for URL goto
+    // Pages > Click-on-the-page > : here you'll see post=some_id
+    // Or we can also use Slug name instead of page_ids
 
+    // Got to Settings > Permalinks > Here select how do you want to include in your URL's
+```
+
+- To Make a template for a specific page
+    * Just make a new page and name it lik: page-page_slug_namge or page-page_id then you have it.
+
+- To make a Template and use/assign it from admin panel.
+```php
+    1. Make a page with any name lets say 'special-template.php'
+    2. Now in 'special-template.php' add below comment.
+    /*
+        Template Name: Special Layout
+    */
+        Your custom code for that template goes here..
+
+    3. It will register 'Special Layout' and you can use it in Admin panel to assign to pages.
+```
+
+- Child Pages
+```php
+    // assign child-aprent pages from the admin panel
+
+    wp_list_pages();    // will list all pages-subpages of the site.
+
+    // List only subpages to a Parent Page
+    $args = array(
+        'child_of' => $post->ID;    // current page id
+        'title_li' => '',       // Title of bullets is set NULL/Empty
+    );
+
+    // Make a function if we want to list ancester(or siblings) pages in a child page
+    $args = array(
+        'child_of' => get_top_ancestor_id(),    // define its functions in functions.php
+        'title_li' => '',
+    );
+    // then
+    // Get top ancestor
+    function get_top_ancestor_id()
+    {
+        global $post;
+        // return ID of parent page when in child
+        if( $post->post_parent )
+        {
+            $ancestors = array_reverse( get_post_ancestors($post->ID) );
+            return $ancestors[0];
+        }
+        return $post->ID;
+    }
+
+    wp_list_pages($args);
+
+    // Access post outside just use 
+    global $post;
+```
+
+## Wordpress Post Archives (Category, Author)
+```php
+    // Show author, category info on top of a only category view page
+
+    // Make a new file name archive.php
+    // Place your logic here for specific posts
+    if( is_category() ){
+        single_cat_title();
+    }else if( is_tag() ){
+        single_tag_title();
+    }else if( is_author() ){
+        echo 'Author Archives: '.get_the_author();
+    }else if( is_day() ){
+        echo 'Daily Archives: '.get_the_date();
+    }else if( is_month() ){
+        echo 'Monthly Archives: '.get_the_date('F Y');
+    }else if( is_year() ){
+        echo 'Yearly Archives: '.get_the_date('Y');
+    }else{
+        echo 'Archive';
+    }
+
+    // show piece of your posts's text
+    the_excerpt();
 ```
