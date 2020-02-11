@@ -209,4 +209,181 @@
 
     // show piece of your posts's text
     the_excerpt();
+
+    // to check if in archive or not
+    if( is_archive() );
+```
+
+## Wordpress post excerpts:
+```php
+    // Add single.php file to view single post
+
+
+    // Insert Read more tag in admin panel while editing/creating a post/page
+    // OR insert this  
+    <!-- more -->
+
+    To edit 'Read More' text use following arg in the function;
+    the_content('Read complete article >');
+
+    // If you want to use Excerpt/Read More in all posts/pages use following instead of the_content();
+    the_excerpt();  // first 55 words of the post
+
+    // Customize Readmore
+    <p>
+        <?php echo get_the_excerpt(); ?>
+        <a href="<?php the_permalink(); ?>"> Read more>> </a>
+    </p>
+
+    // Customize excerpt word-count in functions.php
+    function custom_excerpt_length(){
+        return 25;
+    }
+    // add_filter('hook on event', 'default action')
+    add_filter('excerpt_length', 'custom_excerpt_length');
+    
+    // To check if current post has excerpt
+    if( $post->post_excerpt );
+```
+
+## Wordpress featured images
+- 1. Add featured image support in your theme
+```php
+    // Customization in functions.php file
+
+    function my_theme_setup(){
+        // Add featured image support
+        add_theme_support('post-thumbnails'); // or you can just use it
+
+        // image settings
+        // add_image_size('small-thumbnail', width-px, height-px, true/false (cropping));
+        add_image_size('small-thumbnail', 180, 120, true);
+        add_image_size('banner-image', 920, 210, true);
+
+    }
+    add_action('after_setup_theme', 'my_theme_setup');
+
+    // Using this featured image in the theme
+    // Get the image via
+    the_post_thumbnail();
+
+    // Use custom picture size which you defined already
+    the_post_thumbnail('small-thumbnail');
+
+    // To check if a post has thumbnail
+    if( has_post_thumbnail() );
+
+```
+
+## Wordpress search form functionality
+```php
+    // this method will place a search field automatically
+    // It'll get the form from the file searchform.php if not exists default
+    get_search_form();
+
+    // To customize search form
+    searchform.php
+
+    // Customise search results make a file
+    search.php
+    <h2>Search results for: <?php the_search_query(); ?> </h2>
+
+    // To check if you're in search
+    if( is_search(); )
+```
+
+## Wordpress get_template_part() 
+- Don't repeate yourself.
+```php
+    // 1. Create a new file
+    // 2. Place your code snippet (often repeated) in it
+    // 3. Use the code in other files like
+    get_template_part('file_name');     // 'file_name' slug / page name
+```
+
+## Wordpress post formats
+- aside, gallery, link, image, quote, status, video, audio, chat
+- Post Formats is a theme feature.
+- To use them: 1st. Enable Post Formats, 2nd: Craft different presentations
+
+<!-- To enable Post Formats use the same function as use before for theme_setup -->
+
+```php
+
+    // Add Post Format Support
+    // enable following three features in the array
+    add_theme_support('post-formats', array('aside', 'gallery', 'link') );
+    // Then you'll se post formats while adding a new post under 'Status & Visibility' > Post Format
+
+    // Now we use above a function to get code snippets add second arg for Formats
+    get_template_part('file_name', get_post_format() ); // look for file_name-{aside}.php 
+
+```
+
+## Wordpress Widgets: specific cotent contained
+- Used for specific content modules: sidebar, nav, footer etc.
+- To add widget. You'll nnot see here until activate it
+    Goto Appreance > Widgets 
+- Activating Widgets in a theme; Open functions.php
+
+```php
+    // Add our widget locations
+    function ourWidgetsInit()
+    {
+        register_sidebar(
+            array(
+                'name' => 'Sidebar',
+                'id'  => 'sidebar1'
+            )
+        );
+        // add another here with custome html
+        register_sidebar(
+            array(
+                'name' => 'Footer Area 1',
+                'id'  => 'footer1',
+                'before_widget' => '<div class="xyz">',
+                'after_widget' => '</div>'
+            )
+        );
+    }
+    add_action('widgets_init', 'ourWidgetsInit');
+
+    // Use above Widget in a php file
+    // We can use this widget anywhere
+    dynamic_sidebar('sidebar1');   // pass id as argument
+```
+
+## Wordpress custom static homepage
+- Create two page(posts): 'Home'=>your homepage, 'Blog'=>empty only title
+- Goto Settings > Reading
+- Set 'Your homepage displays' to A static page
+- Set Posts page: Blog
+- Wordpress always looks for 'front-page.php' as your homepge
+    If you need customized homepage just create a page front-page.php and add your custom HTML
+
+## WP_Query
+- Use to get posts/data of our own choice from the database
+```php
+
+    $opinionPosts = WP_Query('cat=7');  // Category whose ID is 7, u can check in the admin dashboard
+
+    // Now we can loop through the $opinionPosts data like we did in index posts whil(have_posts()): the_post()
+    if ($opinionPosts->have_posts()){ while( $opinionPosts->have_posts()) { $opinionPosts->the_post(); } } 
+    // Then in HTML <h1> the_title(); </h1>
+
+    // More abut WP_Query
+    $opinionPosts = WP_Query('cat=7&posts_per_page=10'); // return 10 posts
+
+    // Surrender the control back to the boss Wordpress; always after looping through posts
+    // Use this after whenever you use posts
+    wp_reset_postdata();
+```
+
+## WordPress Customize (Color Picker)
+- User can customize things from the wordpress.
+- Appreance > Customize
+- [Check this link]('https://www.youtube.com/watch?v=dwxIdLSK22o&list=PLpcSpRrAaOaqMA4RdhSnnNcaqOVpX7qi5&index=17')
+```php
+
+
 ```

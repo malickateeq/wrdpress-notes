@@ -22,6 +22,7 @@ get_header();
                 ?>
                 <h2> <?php the_title() ?> </h2>
 
+                <?php the_post_thumbnail('banner-image'); ?>
                 <?php the_content(); ?>
             </article>
 

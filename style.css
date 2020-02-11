@@ -90,3 +90,29 @@ article.post:last-of-type{
 article.page h2{
     font-size: 300%;
 }
+
+/* Image styles */
+img{
+    max-width: 100%;
+    height: auto;
+}
+
+/* Search form */
+div.hd-search{
+    margin: 10px 5px;
+    float: right;
+}
+
+/* Post aside */
+article.post-aside,
+article.post-link{
+    font-size: 125%;
+    background-color: #FFF5CB;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 3px 3px 3px rgb(0, 0, 0, .1);
+}
+article.post-link{
+    padding: 10px;
+    background-color: #E0EBFF;
+}
