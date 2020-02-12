@@ -379,10 +379,93 @@
     wp_reset_postdata();
 ```
 
-## WordPress Customize (Color Picker)
+## WordPress Customize Elements (Color Picker)
 - User can customize things from the wordpress.
 - Appreance > Customize
-- [Check this link]('https://www.youtube.com/watch?v=dwxIdLSK22o&list=PLpcSpRrAaOaqMA4RdhSnnNcaqOVpX7qi5&index=17')
+
+```php
+    // *** WordPress Customize Elements
+    // Theory
+    // i. Control:  is the actual UI element which user interact with.
+    // ii. Settings: What uses choses (input) stored in the DataBase 
+    // iii. Sections: is just a group of ooptions
+
+    // 0. First you must/maybe have a static HTML/CSS content then you can make it dynamic
+
+    // 1. Customize Appreance Opotions
+    function my_theme_customize_register( $wp_customize )
+    {
+        // 1. Create a settings
+        $wp_customize->add_setting('my_theme_link_color', array(
+            'default' => '#006ec3',
+            'transport' => 'refresh',   // how wp update the preview of our site on change
+        ));
+
+        // 2. Create a section to wrap in above setting
+        // __('') WP transalation/localization feature
+        $wp_customize->add_section('my_theme_standard_colors', array(
+            'title' => __('Standard Colors', 'MyTheme'), // On screen label
+            'priority' => 30, // sestion position
+        ));
+
+        // 3. Create a control
+        // WP has pre-built elements just use them                    // using          // name
+        $wp_customize->add_control( new WP_Customize_Color_Control( $wp_customize, 'my_theme_link_color_cntrol', array(
+            'label' => __('Link Color', 'my_theme'), // On screen label
+            // Now assign this control to a section name: 'my_theme_standard_colors'
+            'section' => 'my_theme_standard_colors',
+            // Assign this control a setting where user's input can be stored
+            'settings' => 'my_theme_link_color', 
+        )));
+    }
+    add_action('customize_register', 'my_theme_customize_register');
+    
+    // Output customize CSS on user control change
+    function my_theme_customize_link_color()
+    {?>
+        <!-- HTML, CSS, JS etc. changes here -->
+        <style type="text/css">
+            a:link,
+            a:visited{
+                /* Get dynamic color here */
+                /* place name of the setting in the argument; which is 'settings' => 'my_theme_link_color', */
+                color: <?php echo get_theme_mod('my_theme_link_color'); ?> ;
+            }
+        </style>
+
+    <?php }
+    // When and how this function is going to run
+    add_action('wp_head', 'my_theme_customize_link_color');
+```
+
+## Wordpress Pagination
+
+- To set posts per page goto Settings >Reading > Blog pages show at most = x
+- Place pagination just afte the loop 
+
+```php
+    // Fucntion to get next posts links
+    next_posts_link();
+    // Fucntion to get previous posts links
+    previous_posts_link();
+
+    // Or
+
+    // WP auto query results according to the link/url
+    echo paginate_links();
+    // But what if we want results without url, or at any custom page
+
+    // ** For custom pages.templates...
+
+    // 1. Custom template
+
+    // 2. Write a custom query
+    // 3. Implement Pagination
+
+```
+
+## Wordpress REST API
+
 ```php
 
 

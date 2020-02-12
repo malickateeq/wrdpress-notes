@@ -16,6 +16,8 @@ get_header();
     {
         echo 'No content found!';
     }
+
+    echo paginate_links();
     
     dynamic_sidebar('sidebar1');
 
