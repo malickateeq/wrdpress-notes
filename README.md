@@ -30,6 +30,8 @@
     bloginfo('name');    // name of the site
     bloginfo('description');    // site description
     home_url(); // to get home url :D
+    get_site_url(); //
+    
 
 ```
 
@@ -464,9 +466,53 @@
 
 ```
 
+
+
 ## Wordpress REST API
 
+- CRUD functionalities became easy by WP RESR APIs
+
 ```php
+    // Get any data from the DB in JSON format
+    https://wwww.mysite.com/wp-json/wp/v2/posts
+
+    // You can als pass arguments from here
+    /wp-json/wp/v2/posts?per_page=10
+
+    // Create a new folder with main.js file in it
+    // Use/include this file in your WP theme by resources function we've made earlier
+    
+        // arg1: give it a name, arg2: path;  get_template_directory_uri() == base path of the site, arg3: dependency
+        // arg4: version, arg4: location to load true==just above </body>, false== in header
+        wp_enqueue_script('main_js', get_template_directory_uri() . '/js/main.js', NULL, 1.0, true );
 
 
+```
+## Wordpress Ajax Request
+- To check if a user is admin & logged in 
+```php
+    if(current_user_can('administrator'));
+```
+```javascript
+    // Ajax request
+    var ourRequest = new XMLHttpRequest();
+    ourRequest.open('GET', 'http://website.test/wp-json/wp/v2/posts');
+    
+    ourRequest.onload = function ()
+    {
+        if(ourRequest.status >= 200 && ourRequest.status <400 )
+        {
+            var data = JSON.parse(ourRequest.responseText);
+            jsonToHTML(data);
+        }
+        else
+        {
+            console.log('error');
+        }
+    };
+    ourRequest.onerror = function()
+    {
+        console.log('conn error');
+    };
+    ourRequest.send();
 ```

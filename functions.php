@@ -3,6 +3,16 @@
     function site_resources(){  // any function name
         
         wp_enqueue_style('style', get_stylesheet_uri() );
+
+        // arg1: give it a name, arg2: path;  get_template_directory_uri() == base path of the site, arg3: dependency
+        // arg4: version, arg4: location to load true==just above </body>, false== in header
+        wp_enqueue_script('main_js', get_template_directory_uri() . '/js/main.js', NULL, 1.0, true );
+
+        // Send data to the script
+        wp_localize_script('main_js', 'magicalData', array(
+            'nonce'=> wp_create_nonce('wp_rest'),
+            'siteURL' => get_site_url(),
+        ));
     }
 
     // Run above function

@@ -154,3 +154,18 @@ article.post-link{
     float: right;
     width: 67%;
 }
+
+/* Quick add post */
+.admin-quick-add{
+    background-color: #DDD;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+.admin-quick-add input,
+.admin-quick-add textarea{
+    width: 100%;
+    border: none;
+    padding: 10px;
+    margin: 0 0 10px 0;
+    box-sizing: border-box;
+}
