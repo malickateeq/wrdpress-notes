@@ -23,6 +23,7 @@
 ```
 
 ## Wordpress functions
+- If a WP function starts with get_* it'll return something and else will echo out the_*
 0. Functions related to site info
 ```php
     // use bloginfo('') function and pass a key variable to get its values like;
@@ -245,7 +246,8 @@
     add_filter('excerpt_length', 'custom_excerpt_length');
     
     // To check if current post has excerpt
-    if( $post->post_excerpt );
+    if( $post->post_excerpt ); //OR
+    if( has_excerpt(); )
 ```
 
 ## Wordpress featured images
@@ -292,15 +294,6 @@
 
     // To check if you're in search
     if( is_search(); )
-```
-
-## Wordpress get_template_part() 
-- Don't repeate yourself.
-```php
-    // 1. Create a new file
-    // 2. Place your code snippet (often repeated) in it
-    // 3. Use the code in other files like
-    get_template_part('file_name');     // 'file_name' slug / page name
 ```
 
 ## Wordpress post formats
@@ -365,6 +358,7 @@
 
 ## WP_Query
 - Use to get posts/data of our own choice from the database
+- WP always query by default on the basis of the URL but we can also use Custom query to access data
 ```php
 
     $opinionPosts = WP_Query('cat=7');  // Category whose ID is 7, u can check in the admin dashboard
@@ -378,8 +372,29 @@
 
     // Surrender the control back to the boss Wordpress; always after looping through posts
     // Use this after whenever you use posts
+    // It is used to reset hijacked functions LIKE the_title(); the_content(); etc.
+    wp_reset_postdata();
+
+    // WP Custom Query
+    $result = new WP_Query(array( ));
+    $result = new WP_Query(array(
+        'post_type' => 'page', // post
+        'posts_per_page' => 2,
+        // 'category_name' => 'awards',
+    ));
+    while( $result->have_posts() )
+    {
+        $result->the_post();
+    }
+
+    // Now you can use tons of functions to get data (formatted) as you like
+    the_time('M'); the_title(); the_author(); the_title();
+
+    // Whenever you use custom query always do this
     wp_reset_postdata();
 ```
+
+
 
 ## WordPress Customize Elements (Color Picker)
 - User can customize things from the wordpress.
@@ -494,6 +509,18 @@
     if(current_user_can('administrator'));
 ```
 ```javascript
+    // Fast way to run multiple requests
+    // Async code
+    $.when(
+        one_request,
+        two_request,
+    ).then(
+        (one_resutlt, two_result)=>{
+            // code logic here        
+        }
+    );
+
+
     // Ajax request
     var ourRequest = new XMLHttpRequest();
     ourRequest.open('GET', 'http://website.test/wp-json/wp/v2/posts');
@@ -515,4 +542,391 @@
         console.log('conn error');
     };
     ourRequest.send();
+```
+
+## WP Custom Post Type
+- By default wordpress comes with two post types: Pages and Posts
+```php
+// Create a new post type
+function uni_post_types()
+{
+    // Event Post type
+    register_post_type('event', array(
+        'supports' => array('title', 'editor', 'excerpt'),    // mention features
+        'rewrite' => array('slug'=>'events'),
+        'has_archive' => true,  // To allow Archives
+        'public' => true,
+        'labels' => array(      // Name on Admin Panel sidebar
+                'name'=>'Events',
+                'add_new_item' => 'Add New Event', // set Add new Title
+                'edit_item' => 'Edit Event',
+                'all_items' => 'All Events', // Submenu title
+                'singular_name' => 'Event',
+            ),
+        'menu_icon' => 'dashicons-calendar',  // Get from https://developer.wordpress.org/resource/dashicons/
+    ));
+}
+add_action('init', 'uni_post_types');
+
+// Go to Settings > Permalinks
+// Just clink "Save Changes" to update permalink new structure
+
+// To dynamically get archive link
+echo get_post_type_archive_link('event');
+
+// To register a new custom post type create a file single-my_type.php
+// To show an individual post
+
+// To show all Events in a page then what
+// We need to tell WP that this custom post type supports Archives
+// Create a new page in WP Admin panel named Events
+
+// This code only exists in functions.php but when someone changes their theme eveything gone
+// Although data still resides in the database..
+// To overcome this issue we use Pluins
+
+// To enable custom post types in REST API
+register_post_type('event', array(
+    'show_in_rest' => true,
+    ...
+
+```
+
+### WP Custom Fields
+- Add a custom field in WP Admin post type
+- Don't reinvent the wheel. There are many custom fields which are already present as plugins in WP
+    * Advanced Custom Fields (ACF)
+    * CMB2 (Custom Metaboxes 2)
+```php
+    // Advanced Custom Fields (ACF) gives access to its fields by the following functions
+    $name = get_field('name');
+    print_r ( $name ); // to see what's init
+
+    // Configure Google Maps API in ACF
+    
+
+```
+
+## WP Plugins
+- Create a new folder in WP/Content directory named="mu-plugins" == Must Use Plugins
+- Create a new file in this dir for custom post types
+```php
+    // place above code here to create custom post type
+
+```
+
+## WP Default Qurery Manipulation
+```php
+    // To display all programs order by aplphabatically 'title'
+    //  at front end                 //post type        // whennot a custom query but default URL query
+    if( !is_admin() AND is_post_type_archive('program') AND $query->is_main_query() )
+    {
+        $query->set('orderby', 'title');
+        $query->set('order', 'ASC');
+        $query->set('posts_per_page', -1);
+    }
+```
+
+## WP Images Thumbnails
+- On uploading WP automatically generate 5 copies with different sizes of an image
+- We can also add one of our own
+```php
+// To enable image thumbnail
+// This will enable only for post types not custom types
+add_theme_support('post-thumbnails');
+
+// To enable thumbnail for custom post type
+register_post_type('professor', array(
+    'supports' => array('thumbnail', ...), 
+    ...
+
+// To add custom sizes
+// Generate custom sizes for future uploads
+function uni_features()
+{
+    // args: nickname, widht, height, crop (true,false)
+    add_image_size('professorLandscape', 400, 260, true);
+    add_image_size('professorPortrait', 480, 650, true);
+}
+add_action('after_setup_theme', 'uni_features');
+
+// To use above custom images
+the_post_thumbnail_url('professorPortrait'); // for src=""
+the_post_thumbnail('professorPortrait'); // directly echo/display image
+
+
+// To Generate custom sizes for already uploaded images
+// Plugin to generate custom image sizes
+- Regenerate Thumbnails by Alex Mills
+// Activate > regen thumbnail will regenerate all existing images custom sizes defined in functions.php
+
+// Best plugin for image cropping
+this_plugin() = "Manual Image Crop by Tomasz Sita";
+
+```
+
+## WP DRY
+1. Get code via function
+    - Use it when custom arguments required
+    1. Create a function in function.php
+    ```php
+    // Reusable functions
+    function page_banner($args = NULL)
+    {
+        // PHP logic will live here
+        if(!$args['title'])
+        {
+            $args['title'] = 'Mt title';
+        }
+        ?>
+        <!-- HTML Code here -->
+            <h1 class="page-banner__title"><?php echo $args['title']; ?></h1>
+        <?php
+    }
+    ```
+    2. Call the function from anywhere
+    ```php
+        <!-- To give args -->
+        page_banner(array('title'=> 'Use this title'));
+
+        <!-- To use defaults -->
+        page_banner();
+    ```
+
+2. Reducing duplicaiton via get_template_part() function
+    - Use it when no custom arguments required just plain HTML/PHP etc
+    1. Create a new file/folder (Organised) and place your code in it
+
+    2. Use the file;
+    ```php
+        get_template_part('folder/file');   // don't specify extension here (It is slug)
+        // If we need to get file dynamically 
+        get_template_part('folder/content', 'event');   // will look for a file name "content-event.php"
+    ```
+
+## WP Create REST API
+- Just to be organised create new folder and a file within it
+- Reqiure/Include this file in functions.php
+```php
+    require get_theme_file_path("/inc/search-route.php");
+
+    // Then your REST API code in search-route.php file
+    function uni_register_search()
+    {
+        // In routes no conflict with plugins
+        register_rest_route('uni/v1', 'search', array(
+            'methods' => 'GET', // OR WP_REST_SERVER::READABLE, will get 'GET' according to the server specified.
+            'callback' => 'uni_search_results',
+        ));
+    }
+    function uni_search_results($data)
+    {
+        // WP automatically convert PHP array to JSON data
+        $events = new WP_Query(array(
+            'post_type' => 'professor',
+            's' => $data['name'], // lowercase 's' means search; http://www.mysite.com/wp-json/uni/v1/search?name=malik
+        ));
+        $results = array();
+        
+        while($events->have_posts())
+        {
+            $events->the_post();
+            array_push( $results, array(
+                'title' => get_the_title(),
+                'permalink' => get_the_permalink(),
+            ));
+        }
+
+        return $results;
+    }
+    add_action('rest_api_init', 'uni_register_search');
+
+    // Route for above to get data is: http://www.mysite.com/wp-json/uni/v1/search
+
+```
+
+## WP Roles and Permissions
+
+- Recommended plugin: User Role Editor by Members (Justin Tadlock) 
+    ![asd](https://wordpress.org/plugins/members/)
+- This will let you create new custome Roles 
+- Users > Roles, Add new Roles
+
+- Include custom post types in assigning permissions
+```php
+// Event Post type
+register_post_type('event', array(
+    'capability_type' => 'event',   // 'capability_type' => 'post', is by default
+    'map_meta_cap' => true, // enforce chnage
+```
+
+## WP User Registration and roles
+- 1stly enable user registration: check Settings > Membership : Anyone can register
+- Set new user default role to "Subscriber" or whatever you want : "Subscriber" safe side
+
+- To sign up: mysite.com/wp-signup.php // OR assign this URL to a Sign Up button
+```php
+    // Login URL
+    wp_login_url();
+    
+    // Sign Up URL
+    wp_registration_url();
+    
+    // Sign Out URL
+    wp_logout_url();
+    
+    // Redirect users
+    $currentUser = wp_get_current_user();
+    if(count($currentUser->roles) == 1 AND $currentUser->roles[0] == 'subscriber')
+    {
+        wp_redirect(site_url('/'));
+        show_admin_bar(false);
+        exit;
+    }
+    
+```
+
+## WP Private Posts
+```javascript
+// POST request data to create a new request
+
+// On client side
+// Not secure
+var newPost = {
+    'title': $(".new-note-title").val(),
+    ...
+    'status': 'private',
+    // Private=Not visible publically
+    // Publlish=Visible to Public
+    // Draft=(default) in draft
+}
+
+// Server side Robust and more secure
+// Force Note Posts to be Private
+add_filter('wp_insert_post_data', 'make_note_private');
+function make_note_private($data)
+{
+    if($data['post_type'] == 'note' AND $data['post_status'] != 'trash')
+    {
+        $data['post_status'] = "private";
+    }
+    return $data;
+}
+
+// !! It'll display title with 'Private:' at the start to fix that
+str_replace("Private:", "", esc_attr(get_the_title()) );
+
+```
+
+## WP Post Limit For Each User
+
+```php
+// To filter html js content
+if($data['post_type'] == 'note')
+{
+    if(count_user_posts( get_current_user_id(), 'note' ) > 4 AND !$postarr['ID'])
+    {
+        die("You have reached your note limit.");
+    }
+...
+
+```
+
+## Deploying WP Website
+
+### Direct way: Plugin
+
+1. Local Settings:
+- Although there is an option in admin panel Tools > Export/Import But It'll not include everything 
+- For complete export we rather use an plugin.
+- Plugin: All-in-One WP Migration by ServMask
+- Then in admin panel choose: All-in-One WP Migration > Export
+- Select Export to 'FILE'
+
+2. Server Setup
+- Install a fresh WP in your server folder where local site will be placed
+- Install this plugin All-in-One WP Migration
+- Then All-in-One WP Migration > Import > File then select the above exported file
+- After successfully importing, Go to settings > permalinks and refresh then click save changes (2 times)
+- Your site is deployed now.
+
+### Deployed via Git - Manual Deployment
+
+1. Database shifting:
+- The first thing we need to do is to replace all URLs 'localsite.test' to 'livesite.com' in the database
+- We can do this in text editor by manually replacing OR if DB is huge we can get help via a tiny plugin
+
+- "WP Migrate DB By Delicious Brains" Install this plugin.
+- Goto Tools > Migrate DB
+- Select appropriate settings and click export
+- Use/import this DB to server.
+
+- Replace DB credentails in root file 'config.php' of WP
+- To use the same file for local and live server
+
+- create a new file local.php in root folder then
+```php
+if(file_exists(dirname(__FILE__).'/local.php') )
+{
+    // Local Database Settings
+	define( 'DB_NAME', 'arid_db' );
+	define( 'DB_USER', 'root' );
+	define( 'DB_PASSWORD', '' );
+	define( 'DB_HOST', 'localhost' );
+}
+else
+{
+    // Live Database Settings
+	define( 'DB_NAME', 'myahmed_arid' );
+	define( 'DB_USER', 'myahmed_malik' );
+	define( 'DB_PASSWORD', '@teeQ786' );
+	define( 'DB_HOST', 'localhost' );
+}
+```
+
+- Push the project to Git or Bitbucket
+    ![Git+Cpanel](https://medium.com/@ridbay/how-to-deploy-your-github-repositories-to-cpanel-the-easier-way-16ec6e6cc7ee)
+
+## WP Create a Basic Plugin
+- Create a new folder in Plugins folder
+- Create a PHP file init
+    "my-plugin.php"
+```php
+/*
+Plugin Name: My Plugin
+Description: 123
+*/
+// Your manipulation code here
+
+// We can do many aamazing things whith these two functions
+add_filter();
+add_action();
+
+add_filter('the_content', 'myContent');
+function myContent($content)
+{
+    $content = str_replace('malik ateeq', '*****',$content);
+    return $content;
+}
+
+```
+
+- Use shortcodes in Plugins
+- In shortcodes we can add dynamic content while creating a post like; [myTotalRevenue] 
+- Now in plugin do this
+```php
+    add_shortcode('myTotalRevenue', 'revenue_count');
+    function revenue_count()
+    {
+        // My query
+        return 3+2;
+    }
+```
+- For more info related plugins learn following from WP
+```php
+    add_menu_page();
+    add_option();
+    get_option();
+    update_option();
+    delete_option();
 ```
